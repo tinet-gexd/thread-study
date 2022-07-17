@@ -17,6 +17,9 @@
   <modules>
     <module>thread-common</module>
     <module>thread-admin</module>
+    <module>hystrix-dashboard</module>
+    <module>hystrix-user</module>
+    <module>hystrix-user-api</module>
   </modules>
   <packaging>pom</packaging>
 
