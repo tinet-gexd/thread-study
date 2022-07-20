@@ -15,8 +15,6 @@
   <artifactId>thread-study</artifactId>
   <version>1.0-SNAPSHOT</version>
   <modules>
-    <module>thread-common</module>
-    <module>thread-admin</module>
     <module>hystrix-dashboard</module>
     <module>hystrix-user</module>
     <module>hystrix-user-api</module>
@@ -44,6 +42,15 @@
     </plugins>
   </build>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+        <version>1.2.83</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
 
 </project>

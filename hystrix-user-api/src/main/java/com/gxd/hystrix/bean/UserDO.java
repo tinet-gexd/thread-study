@@ -1,10 +1,7 @@
-package com.gxd.hystrix.dto;
+package com.gxd.hystrix.bean;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  *

@@ -1,7 +1,7 @@
 package com.gxd.hystrix.mapper;
 
 
-import com.gxd.hystrix.dto.UserDO;
+import com.gxd.hystrix.bean.UserDO;
 
 import java.util.List;
 

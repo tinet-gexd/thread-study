@@ -1,6 +1,6 @@
 package com.gxd.hystrix.service.impl;
 
-import com.gxd.hystrix.dto.UserDO;
+import com.gxd.hystrix.bean.UserDO;
 import com.gxd.hystrix.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
