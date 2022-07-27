@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "HYSTRIX-USER",path = "/feign",url = "http://localhot:8089")
+@FeignClient(name = "HYSTRIX-USER",path = "/feign",url = "http://localhost:8089")
 public interface UserService {
 
     @GetMapping("/queryAll")

@@ -36,16 +36,16 @@ public class HystrixController  {
             commandProperties = {
                     @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_STRATEGY,value = "THREAD"),
                     @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_THREAD_TIMEOUT_IN_MILLISECONDS,
-                            value = "1000")
+                            value = "10000")
             }
     )
     @RequestMapping(value = "/user",method = RequestMethod.GET)
     public UserDO getUser(@RequestParam String name){
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         return userService.getUser(name);
     }
 

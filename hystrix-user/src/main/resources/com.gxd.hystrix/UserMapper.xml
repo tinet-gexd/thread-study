@@ -15,6 +15,10 @@
         email,
         address
     </sql>
+    <delete id="deleteUser">
+        delete from user where id =#{userDO.id}
+
+    </delete>
 
     <select id="listAll" resultMap="BaseResultMap">
         SELECT
@@ -31,7 +35,19 @@
         user
         where
         name like concat('%',#{name},'%')
-
-
     </select>
+
+    <insert id="saveUser">
+        insert into user(id,
+                         name,
+                         age,
+                         email,
+                         address)
+        values (#{id},
+                #{name},
+                #{age},
+                #{email},
+                #{address})
+    </insert>
+
 </mapper>

@@ -16,6 +16,7 @@
   <version>1.0-SNAPSHOT</version>
   <modules>
     <module>hystrix-dashboard</module>
+    <module>hystrix-study</module>
     <module>hystrix-user</module>
     <module>hystrix-user-api</module>
   </modules>

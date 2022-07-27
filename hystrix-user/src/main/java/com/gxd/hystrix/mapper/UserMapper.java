@@ -11,4 +11,8 @@ public interface UserMapper {
     List<UserDO>  listAll();
 
     UserDO getUser(String name);
+
+    String saveUser(UserDO userDO);
+
+    String deleteUser(UserDO userDO);
 }
