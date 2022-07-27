@@ -40,7 +40,7 @@ public class HystrixController  {
             }
     )
     @RequestMapping(value = "/user",method = RequestMethod.GET)
-    public UserDO getUser(@RequestParam String name){
+    public UserDO getUser(@RequestParam String name) throws Exception {
 //        try {
 //            Thread.sleep(1000);
 //        } catch (InterruptedException e) {

@@ -13,7 +13,7 @@ public interface UserService {
     List<UserDO> queryAll();
 
     @GetMapping("/getUser")
-    UserDO getUser(@RequestParam("name") String name);
+    UserDO getUser(@RequestParam("name") String name) throws Exception;
 
     @PostMapping("/saveUser")
     String saveUser(@RequestBody UserDO userDO);

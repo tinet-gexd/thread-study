@@ -2,6 +2,9 @@ package com.gxd.hystrix.service.impl;
 
 import com.gxd.hystrix.bean.UserDO;
 import com.gxd.hystrix.mapper.UserMapper;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
+import com.netflix.hystrix.contrib.javanica.conf.HystrixPropertiesManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +22,6 @@ public class UserServiceImpl {
         log.info("user database");
         return userMapper.listAll();
     }
-
     public UserDO getUser(String name) {
         return userMapper.getUser(name);
     }
