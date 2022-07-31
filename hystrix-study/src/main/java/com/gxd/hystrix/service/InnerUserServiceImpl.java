@@ -35,5 +35,4 @@ public class InnerUserServiceImpl implements InnerUserService{
         return userService.getUser(name);
     }
 
-
 }
