@@ -8,6 +8,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.netflix.hystrix.contrib.javanica.conf.HystrixPropertiesManager;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 @RestController
 @Slf4j
@@ -85,6 +87,44 @@ public class HystrixController  {
     }
 
 
+    @HystrixCommand(
+            groupKey = "queryAllBySemaphoreGroup",
+            commandKey = "queryAllBySemaphore",
+            commandProperties = {
+                    @HystrixProperty(name = "execution.isolation.strategy",value = "SEMAPHORE"),
+                    @HystrixProperty(name = "execution.isolation.semaphore.maxConcurrentRequests",value = "10")
+            }
+    )
+    @RequestMapping(value = "/queryAllBySemaphore",method = RequestMethod.GET)
+    public List<UserDO> queryAllBySemaphore() {
+        log.info(Thread.currentThread().getName() + "======queryAllBySemaphore======");
+        return userService.queryAll();
+    }
+
+    @RequestMapping(value = "/testSemaphore",method = RequestMethod.GET)
+    public String testSemaphore() {
+        int count = 11;
+        CountDownLatch countDownLatch = new CountDownLatch(count);
+        for (int i = 0; i < count; i++) {
+            new Thread(){
+                @SneakyThrows
+                @Override
+                public void run() {
+                    try {
+                        countDownLatch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("========"+currentThread().getName()+".queryAllBySemaphore()");
+                    queryAllBySemaphore();
+                }
+            }.start();
+            countDownLatch.countDown();
+        }
+        return "testSemaphore";
+    }
+
+
 
     @HystrixCommand(
             groupKey = "queryAllGroup",
@@ -103,6 +143,8 @@ public class HystrixController  {
         log.info(Thread.currentThread().getName() + "======queryAllThrowError======");
         throw new HystrixBadRequestException("queryAllThrowError bad request test");
     }
+
+
     @HystrixCommand(
             groupKey = "queryAllGroup",
             threadPoolProperties = {
@@ -128,6 +170,7 @@ public class HystrixController  {
 
 
     @HystrixCommand(
+            fallbackMethod = "queryAllErrorHandler",
             groupKey = "queryAllGroup",
             threadPoolProperties = {
                     @HystrixProperty(name = "coreSize",value = "10")
@@ -140,8 +183,15 @@ public class HystrixController  {
             }
     )
     @RequestMapping(value = "/queryAllError",method = RequestMethod.GET)
-    public void queryAllError(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public String queryAllError(HttpServletRequest request, HttpServletResponse response) throws Exception {
         log.info(Thread.currentThread().getName() + "======queryAllError======");
         throw new Exception("queryAllError");
     }
+
+    public String queryAllErrorHandler(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        log.info(Thread.currentThread().getName() + "======queryAllErrorHandler======");
+        return "queryAllErrorHandler";
+    }
+
+
 }
