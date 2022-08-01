@@ -29,7 +29,7 @@ public class UserServiceApiController implements UserService {
         return userMapper.listAll();
     }
 
-
+    //========================================2降级============================
     @HystrixCommand(
             fallbackMethod = "getUserFallback1",
             groupKey = "UserServiceGroup",
@@ -47,12 +47,9 @@ public class UserServiceApiController implements UserService {
     @GetMapping("/getUser")
     public UserDO getUser(@RequestParam String name) throws Exception {
         log.info("===========getUser:"+Thread.currentThread().getName()+"================");
-//        Random random = new Random(4);
-//        if (random.nextInt() > 2 ){
-//            throw new Exception("1111");
-//        }
         return userMapper.getUser(name);
     }
+
     /**
      * 降级给还是可以降级
      */

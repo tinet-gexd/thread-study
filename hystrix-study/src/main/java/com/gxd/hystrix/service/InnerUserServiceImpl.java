@@ -10,12 +10,27 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Slf4j
 @Service
 public class InnerUserServiceImpl implements InnerUserService{
 
     @Autowired
     UserService userService;
+
+    @HystrixCommand(
+            groupKey = "queryAllBySemaphoreGroup",
+            commandKey = "queryAllBySemaphore",
+            commandProperties = {
+                    @HystrixProperty(name = "execution.isolation.strategy",value = "SEMAPHORE"),
+                    @HystrixProperty(name = "execution.isolation.semaphore.maxConcurrentRequests",value = "10")
+            }
+    )
+    @Override
+    public List<UserDO> queryAllBySemaphore() {
+        log.info(Thread.currentThread().getName() + "======getUserByService======");
+        return userService.queryAll();
+    }
 
     @HystrixCommand(
             groupKey = "getUserGroup",
@@ -34,5 +49,4 @@ public class InnerUserServiceImpl implements InnerUserService{
         log.info(Thread.currentThread().getName() + "======getUserByService======");
         return userService.getUser(name);
     }
-
 }
