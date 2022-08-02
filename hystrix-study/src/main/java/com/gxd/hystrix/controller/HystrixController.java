@@ -2,7 +2,6 @@ package com.gxd.hystrix.controller;
 
 import com.gxd.hystrix.bean.UserDO;
 import com.gxd.hystrix.service.InnerUserService;
-import com.gxd.hystrix.service.InnerUserServiceImpl;
 import com.gxd.hystrix.service.UserService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
@@ -11,10 +10,6 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,12 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.http.HTTPException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @Slf4j
@@ -40,6 +32,7 @@ public class HystrixController  {
     InnerUserService innerUserService;
 
 
+
     /**
      * Command属性
      * execution.isolation.strategy  执行的隔离策略
@@ -49,6 +42,7 @@ public class HystrixController  {
      * execution.isolation.thread.timeoutInMilliseconds  设置HystrixCommand执行的超时时间，单位毫秒
      * execution.timeout.enabled  是否启动超时时间，true，false
      * execution.isolation.semaphore.maxConcurrentRequests  隔离策略为信号量的时候，该属性来配置信号量的大小，最大并发达到信号量时，后续请求被拒绝
+     *
      * <p>
      * circuitBreaker.enabled   是否开启断路器功能
      * circuitBreaker.requestVolumeThreshold  该属性设置在滚动时间窗口中，断路器的最小请求数。默认20，如果在窗口时间内请求次数19，即使19个全部失败，断路器也不会打开
@@ -123,6 +117,7 @@ public class HystrixController  {
     /**
      * 降级
      * fallbackMethod
+     * 在一段时间（默认10s）内，最多可接受请求10次请求，如果请求超出，方法异常或超时进入降级方法，拒接
      */
     @HystrixCommand(
             fallbackMethod = "queryAllErrorHandler",
@@ -148,23 +143,6 @@ public class HystrixController  {
         return "queryAllErrorHandler";
     }
 
-    @HystrixCommand(
-            groupKey = "queryAllGroup",
-            threadPoolProperties = {
-                    @HystrixProperty(name = "coreSize",value = "10")
-            },
-            commandKey = "queryAll",
-            commandProperties = {
-                    @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_STRATEGY,value = "THREAD"),
-                    @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_THREAD_TIMEOUT_IN_MILLISECONDS,
-                            value = "10000")
-            }
-    )
-    @RequestMapping(value = "/queryAll",method = RequestMethod.GET)
-    public List<UserDO> queryAll() {
-        log.info(Thread.currentThread().getName() + "======queryAll======");
-        return userService.queryAll();
-    }
 
     //========================================3服务监控各种情况============================
     @HystrixCommand(
@@ -208,4 +186,56 @@ public class HystrixController  {
     }
 
 
+    //=================================================================================
+
+    @HystrixCommand(
+            groupKey = "queryAllGroup",
+            threadPoolProperties = {
+                    @HystrixProperty(name = "coreSize",value = "10")
+            },
+            commandKey = "queryAll",
+            commandProperties = {
+                    @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_STRATEGY,value = "THREAD"),
+                    @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_THREAD_TIMEOUT_IN_MILLISECONDS,
+                            value = "10000")
+            }
+    )
+    @RequestMapping(value = "/queryAll",method = RequestMethod.GET)
+    public List<UserDO> queryAll() {
+        log.info(Thread.currentThread().getName() + "======queryAll======");
+        return userService.queryAll();
+    }
+
+    //=========================================4熔断========================================
+    AtomicInteger a = new AtomicInteger(0);
+    /**
+     * 熔断配置，如果一段时间内请求超过50%的失败率并且次数达到阈值（20），熔断打开
+     *  当熔断策略开启后，延迟多久（2s)后，熔断器处于半开状态 （尝试再次请求服务，如果请求成功，熔断关闭，否则打开熔断）
+     * circuitBreaker.requestVolumeThreshold  该属性设置在滚动时间窗口中，断路器的最小请求数。默认20，如果在窗口时间内请求次数19，即使19个全部失败，断路器也不会打开
+     * circuitBreaker.errorThresholdPercentage  该属性设置断路器打开的错误百分比。在滚动时间内，在请求数量超过circuitBreaker.requestVolumeThreshold,如果错误请求数的百分比超过这个比例，断路器就为打开状态
+     * metrics.rollingStats.timeInMilliseconds   设置滚动时间窗的长度，单位毫秒。
+     * circuitBreaker.sleepWindowInMilliseconds    改属性用来设置当断路器打开之后的休眠时间，休眠时间结束后断路器为半开状态，
+     * 断路器能接受请求，如果请求失败又重新回到打开状态，如果请求成功又回到关闭状态
+     */
+    @HystrixCommand(
+            fallbackMethod = "queryAllErrorHandler",
+            groupKey = "queryAllGroup",
+            threadPoolProperties = {
+                    @HystrixProperty(name = "coreSize",value = "10")
+            },
+            commandKey = "queryAllByCircuit",
+            commandProperties = {
+                    @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_STRATEGY,value = "THREAD"),
+                    @HystrixProperty(name = HystrixPropertiesManager.EXECUTION_ISOLATION_THREAD_TIMEOUT_IN_MILLISECONDS,
+                            value = "500")
+            }
+    )
+    @RequestMapping(value = "/queryAllByCircuit",method = RequestMethod.GET)
+    public String queryAllByCircuit(@RequestParam String a, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        log.info(Thread.currentThread().getName()+ "======queryAllByCircuitError======");
+        if ("1".equals(a)){
+            return "success";
+        }
+        throw new Exception("queryAllByCircuitError");
+    }
 }

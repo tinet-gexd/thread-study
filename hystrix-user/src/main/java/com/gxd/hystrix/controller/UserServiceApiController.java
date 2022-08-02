@@ -34,7 +34,7 @@ public class UserServiceApiController implements UserService {
             fallbackMethod = "getUserFallback1",
             groupKey = "UserServiceGroup",
             threadPoolProperties = {
-                    @HystrixProperty(name = "coreSize",value = "11")
+                    @HystrixProperty(name = "coreSize",value = "10")
             },
             commandKey = "getUser",
             commandProperties = {
@@ -54,7 +54,8 @@ public class UserServiceApiController implements UserService {
      * 降级给还是可以降级
      */
     @HystrixCommand(
-            groupKey = "UserServiceGroup",
+            fallbackMethod = "getUserFallback2",
+            groupKey = "UserServiceGroup2",
             threadPoolProperties = {
                     @HystrixProperty(name = "coreSize",value = "10")
             },
@@ -74,15 +75,15 @@ public class UserServiceApiController implements UserService {
     }
 
 
-//    /**
-//     * 降级给还是可以降级
-//     */
-//    public UserDO getUserFallback2(String name) {
-//        log.info("===========再降级方法getUserFallback2"+Thread.currentThread().getName()+"================");
-//        UserDO userDO = new UserDO();
-//        userDO.setName("这是降级再降级方法");
-//        return userDO;
-//    }
+    /**
+     * 降级给还是可以降级
+     */
+    public UserDO getUserFallback2(String name) {
+        log.info("===========再降级方法getUserFallback2"+Thread.currentThread().getName()+"================");
+        UserDO userDO = new UserDO();
+        userDO.setName("这是降级再降级方法");
+        return userDO;
+    }
 
 
     @Override
