@@ -207,7 +207,7 @@ public class HystrixController  {
     }
 
     //=========================================4熔断========================================
-    AtomicInteger a = new AtomicInteger(0);
+    AtomicInteger i = new AtomicInteger(0);
     /**
      * 熔断配置，如果一段时间内请求超过50%的失败率并且次数达到阈值（20），熔断打开
      *  当熔断策略开启后，延迟多久（2s)后，熔断器处于半开状态 （尝试再次请求服务，如果请求成功，熔断关闭，否则打开熔断）
@@ -218,7 +218,7 @@ public class HystrixController  {
      * 断路器能接受请求，如果请求失败又重新回到打开状态，如果请求成功又回到关闭状态
      */
     @HystrixCommand(
-            fallbackMethod = "queryAllErrorHandler",
+            fallbackMethod = "queryAllErrorHandler1",
             groupKey = "queryAllGroup",
             threadPoolProperties = {
                     @HystrixProperty(name = "coreSize",value = "10")
@@ -231,11 +231,18 @@ public class HystrixController  {
             }
     )
     @RequestMapping(value = "/queryAllByCircuit",method = RequestMethod.GET)
-    public String queryAllByCircuit(@RequestParam String a, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public String queryAllByCircuit(@RequestParam(name = "a",required = false) String a) throws Exception {
         log.info(Thread.currentThread().getName()+ "======queryAllByCircuitError======");
         if ("1".equals(a)){
             return "success";
         }
         throw new Exception("queryAllByCircuitError");
+    }
+
+
+
+    public String queryAllErrorHandler1(@RequestParam(name = "a",required = false) String a) throws Exception {
+        log.info(Thread.currentThread().getName() + "======queryAllErrorHandler1======");
+        return "queryAllErrorHandler1";
     }
 }

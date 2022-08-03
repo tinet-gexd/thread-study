@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 @EnableCircuitBreaker
-@EnableFeignClients
+@EnableFeignClients("com.gxd.hystrix")
 public class HystrixStudyApplication {
 
     public static void main(String[] args) {

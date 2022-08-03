@@ -51,7 +51,7 @@ public class UserServiceApiController implements UserService {
     }
 
     /**
-     * 降级给还是可以降级
+     * 降级
      */
     @HystrixCommand(
             fallbackMethod = "getUserFallback2",
